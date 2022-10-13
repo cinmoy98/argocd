@@ -7,7 +7,7 @@ spec:
   project: default
 
   source:
-    repoURL: https://gitlab.com/cinmoy98/argocd-nana.git
+    repoURL: https://github.com/cinmoy98/argocd.git
     targetRevision: HEAD
     path: dev
   destination: 
