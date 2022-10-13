@@ -1,0 +1,175 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  annotations:
+    meta.helm.sh/release-name: consul
+    meta.helm.sh/release-namespace: consul
+  creationTimestamp: "2022-02-24T12:24:56Z"
+  generation: 3
+  labels:
+    app.kubernetes.io/instance: consul
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: consul
+    helm.sh/chart: consul-10.2.6
+  name: consul
+  namespace: consul
+  resourceVersion: "124261765"
+  uid: 61ad0098-2b6b-48c6-8477-c87225bd3e1d
+spec:
+  podManagementPolicy: Parallel
+  replicas: 2
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: consul
+      app.kubernetes.io/name: consul
+  serviceName: consul-headless
+  template:
+    metadata:
+      annotations:
+        date: "1659817266"
+      creationTimestamp: null
+      labels:
+        app.kubernetes.io/instance: consul
+        app.kubernetes.io/managed-by: Helm
+        app.kubernetes.io/name: consul
+        helm.sh/chart: consul-10.2.6
+    spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - podAffinityTerm:
+              labelSelector:
+                matchLabels:
+                  app.kubernetes.io/instance: consul
+                  app.kubernetes.io/name: consul
+              namespaces:
+              - consul
+              topologyKey: kubernetes.io/hostname
+            weight: 1
+      containers:
+      - env:
+        - name: BITNAMI_DEBUG
+          value: "false"
+        - name: CONSUL_NODE_NAME
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.name
+        - name: CONSUL_RETRY_JOIN
+          value: consul-headless.consul.svc.cluster.local
+        - name: CONSUL_DISABLE_KEYRING_FILE
+          value: "true"
+        - name: CONSUL_BOOTSTRAP_EXPECT
+          value: "3"
+        - name: CONSUL_RAFT_MULTIPLIER
+          value: "1"
+        - name: CONSUL_DOMAIN
+          value: consul
+        - name: CONSUL_DATACENTER
+          value: dc1
+        - name: CONSUL_UI
+          value: "true"
+        - name: CONSUL_HTTP_PORT_NUMBER
+          value: "8500"
+        - name: CONSUL_DNS_PORT_NUMBER
+          value: "8600"
+        - name: CONSUL_RPC_PORT_NUMBER
+          value: "8400"
+        - name: CONSUL_SERF_LAN_PORT_NUMBER
+          value: "8301"
+        image: docker.io/bitnami/consul:1.11.3-debian-10-r0
+        imagePullPolicy: IfNotPresent
+        lifecycle:
+          preStop:
+            exec:
+              command:
+              - consul
+              - leave
+        livenessProbe:
+          exec:
+            command:
+            - consul
+            - operator
+            - raft
+            - list-peers
+          failureThreshold: 6
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 5
+        name: consul
+        ports:
+        - containerPort: 8500
+          name: http
+          protocol: TCP
+        - containerPort: 8400
+          name: rpc
+          protocol: TCP
+        - containerPort: 8301
+          name: serflan-tcp
+          protocol: TCP
+        - containerPort: 8301
+          name: serflan-udp
+          protocol: UDP
+        - containerPort: 8300
+          name: rpc-server
+          protocol: TCP
+        - containerPort: 8600
+          name: dns-tcp
+          protocol: TCP
+        - containerPort: 8600
+          name: dns-udp
+          protocol: UDP
+        readinessProbe:
+          exec:
+            command:
+            - consul
+            - members
+          failureThreshold: 6
+          initialDelaySeconds: 5
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 5
+        resources: {}
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 1001
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /bitnami/consul
+          name: data
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext:
+        fsGroup: 1001
+      terminationGracePeriodSeconds: 30
+  updateStrategy:
+    type: RollingUpdate
+  volumeClaimTemplates:
+  - apiVersion: v1
+    kind: PersistentVolumeClaim
+    metadata:
+      creationTimestamp: null
+      name: data
+    spec:
+      accessModes:
+      - ReadWriteOnce
+      resources:
+        requests:
+          storage: 8Gi
+      volumeMode: Filesystem
+    status:
+      phase: Pending
+status:
+  availableReplicas: 2
+  collisionCount: 0
+  currentReplicas: 2
+  currentRevision: consul-f8bb98d56
+  observedGeneration: 3
+  readyReplicas: 2
+  replicas: 2
+  updateRevision: consul-f8bb98d56
+  updatedReplicas: 2
